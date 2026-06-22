@@ -494,7 +494,7 @@ module "web" {
     appuser_initial    = random_password.os_appuser_password.result
     # Passing Vault config to the EC2 so Vault Agent can authenticate via AWS IAM and auto-rotate internal certs
     vault_address = var.vault_address
-    pki_namespace = vault_namespace.demo_platform.path_fq
+    pki_namespace = format("admin/%s", vault_namespace.demo_platform.path)
     aws_auth_path = vault_auth_backend.aws.path
     private_zone  = var.private_hosted_zone
   })

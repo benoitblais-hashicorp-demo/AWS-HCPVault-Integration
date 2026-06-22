@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing! This repository uses **Terraform** to showcase an end-to-end automated architecture comparing standard AWS deployments (static/adoption) against HashiCorp's standardized Vault-backed workflows (dynamic/modules). It orchestrates AWS EC2, RDS, and Application Load Balancers alongside HashiCorp Vault dynamic OS secrets, dynamic database credentials, and comprehensive PKI (Public Let's Encrypt / Private Root CA) integration. Please review these guidelines before contributing.
+Thank you for your interest in contributing! This repository uses **Terraform** to showcase an end-to-end dynamic AWS and Vault architecture. It orchestrates AWS EC2, RDS, and Application Load Balancers alongside HashiCorp Vault KV v2 secrets, dynamic database credentials, internal PKI, and AWS ACM for public TLS. Please review these guidelines before contributing.
 
 ## Architecture Paradigm: HCP Terraform Workspaces
 
@@ -22,7 +22,7 @@ This project leverages standard Terraform configurations and uses HCP Terraform 
 * **Minimalism:** Favor readability and simplicity over highly complex abstractions.
 * **Variable Descriptions:** Every variable must have a clear `description` and `type`.
 * **Version Constraints:** Use the pessimistic operator (`~>`) for provider and module versions to ensure stability without strict lock-in. Pin the Terraform version using `required_version` in the `terraform` block.
-* **Naming Conventions:** Use `snake_case` for all resource and variable names. Avoid including the resource type in the name (i.e., `vault_jwt_auth_backend.github`, not `vault_jwt_auth_backend.jwt_github`).
+* **Naming Conventions:** Use `snake_case` for all resource and variable names. Avoid including the resource type in the name.
 
 ## Security Check
 

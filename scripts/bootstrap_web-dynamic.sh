@@ -68,12 +68,12 @@ pid_file = "/var/run/vault-agent.pid"
 
 vault {
   address = "${vault_address}"
+  namespace = "${pki_namespace}"
 }
 
 auto_auth {
   method "aws" {
     mount_path = "auth/${aws_auth_path}"
-    namespace  = "${pki_namespace}"
     config = {
       type = "iam"
       role = "web-agent-role"
@@ -169,8 +169,21 @@ systemctl enable demo-web
 systemctl enable vault-agent
 
 systemctl start vault-agent
-# Give Vault Agent a moment to authenticate and fetch the initial certificate
-sleep 3
+
+# Wait for Vault Agent to render the initial certificate bundle before starting the web service
+for i in $(seq 1 60); do
+  if [[ -f /opt/app/bundle.pem ]]; then
+    break
+  fi
+  sleep 1
+done
+
+if [[ ! -f /opt/app/bundle.pem ]]; then
+  echo "Vault certificate bundle was not created in /opt/app/bundle.pem"
+  journalctl -u vault-agent --no-pager -n 50 || true
+  exit 1
+fi
+
 # Start the web service; if Vault Agent already restarted it via the template command, this is a no-op harmless call
 systemctl start demo-web || true
 

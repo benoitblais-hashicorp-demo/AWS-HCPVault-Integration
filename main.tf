@@ -104,10 +104,10 @@ resource "vault_pki_secret_backend_root_sign_intermediate" "pki_intermediate_sig
 
 # Set the signed intermediate certificate
 resource "vault_pki_secret_backend_intermediate_set_signed" "pki_intermediate_set" {
-  namespace    = vault_namespace.demo_platform.path_fq
-  backend      = vault_mount.pki_intermediate.path
-  certificate  = vault_pki_secret_backend_root_sign_intermediate.pki_intermediate_signed.certificate
-  depends_on   = [vault_pki_secret_backend_root_sign_intermediate.pki_intermediate_signed]
+  namespace   = vault_namespace.demo_platform.path_fq
+  backend     = vault_mount.pki_intermediate.path
+  certificate = vault_pki_secret_backend_root_sign_intermediate.pki_intermediate_signed.certificate
+  depends_on  = [vault_pki_secret_backend_root_sign_intermediate.pki_intermediate_signed]
 }
 
 # ==============================================================================

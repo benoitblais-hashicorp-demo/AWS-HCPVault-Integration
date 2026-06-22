@@ -113,15 +113,10 @@ To provision resources on AWS, Terraform requires authentication. You can authen
 
 ### Vault Provider Authentication
 
-The `vault` provider must be configured to communicate with your HashiCorp Vault cluster.
+The `vault` provider authenticates using HCP Terraform dynamic credentials via JWT. No static Vault token is used or required.
 
-* **HCP Terraform / JWT Auth (Recommended)**: Configure Vault to trust HCP Terraform workspace identities via JWT authentication.
-* **Environment Variables**: Provide the Vault address and token for local runs.
-
-  ```bash
-  export VAULT_ADDR="https://vault.example.com:8200"
-   export VAULT_TOKEN="<your-vault-token>"
-  ```
+* **HCP Terraform / JWT Auth**: The HCP Terraform workspace is configured to authenticate to Vault using a trusted JWT identity. The Vault provider receives a short-lived token automatically at plan and apply time.
+* **Required workspace variables**: `VAULT_ADDR` must be set in the HCP Terraform workspace pointing to your HCP Vault cluster endpoint.
 
 ## Documentation
 
@@ -134,8 +129,6 @@ The following requirements are needed by this module:
 - <a name="requirement_aws"></a> [aws](#requirement\_aws) (~> 5.0)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5.0)
-
-- <a name="requirement_time"></a> [time](#requirement\_time) (~> 0.11.0)
 
 - <a name="requirement_vault"></a> [vault](#requirement\_vault) (>= 4.0.0)
 
@@ -205,14 +198,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_acme_email"></a> [acme\_email](#input\_acme\_email)
-
-Description: (Optional) Email address for Let's Encrypt ACME account registration.
-
-Type: `string`
-
-Default: `"benoit.blais@ibm.com"`
-
 ### <a name="input_admin_laptop_ip"></a> [admin\_laptop\_ip](#input\_admin\_laptop\_ip)
 
 Description: (Optional) Public IP of your local laptop allowed to connect directly to the RDS instance for demo verification. Needs /32 suffix.
@@ -236,14 +221,6 @@ Description: (Optional) Vault namespace path for the demo. Must use lowercase le
 Type: `string`
 
 Default: `"demo_platform"`
-
-### <a name="input_force_cert_rotation"></a> [force\_cert\_rotation](#input\_force\_cert\_rotation)
-
-Description: (Optional) A trigger to forcefully rotate the ALB Let's Encrypt certificate prematurely during demonstrations. Change this value to force rotation.
-
-Type: `string`
-
-Default: `"1"`
 
 ### <a name="input_private_hosted_zone"></a> [private\_hosted\_zone](#input\_private\_hosted\_zone)
 

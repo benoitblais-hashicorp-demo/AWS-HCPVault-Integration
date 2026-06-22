@@ -14,7 +14,7 @@ This project leverages standard Terraform configurations and uses HCP Terraform 
 
 1. **Fork & Branch:** Create a branch for your feature or bug fix.
 2. **Write Code:** Modify the Terraform configurations (`main.tf`, `variables.tf`, etc.) following our styling guidelines.
-3. **Format:** You MUST run `terraform fmt -recursive` before committing. Unformatted code will fail CI/CD checks.
+3. **Format:** Formatting checks are enforced by CI/CD. Local formatting is optional for contributor convenience.
 4. **Open a Pull Request:** Fill out the provided PR template outlining your changes.
 
 ## Code Guidelines

@@ -40,7 +40,7 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
 
 1. **Showcase the Dynamic Web App:**
    Navigate to the `website_url` output (e.g. `https://web-dynamic.benoit-blais.sbx.hashidemos.io`) to show the secured application running correctly with an ACM-backed public certificate.
-2. **Demonstrate Dynamic OS Access:**
+2. **Demonstrate OS Access:**
    * Retrieve the Linux password material from Vault KV v2.
    * Use the generated credential to SSH into the EC2 instance as needed for demo operations.
 3. **Demonstrate Automated Certificate Rotation:**
@@ -65,7 +65,18 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
    * Demonstrate that SSH access is immediately permitted when using the newly minted password.
 5. **Demonstrate Dynamic Database Credentials:**
    * Request a temporary database credential: `vault read database/creds/webapp`
-   * Connect directly to the AWS RDS instance using these credentials (e.g., using `psql`, PGAdmin or DBeaver). Provide the RDS Endpoint output from Terraform as the host.
+    * Open pgAdmin4 and create a new connection using the RDS Endpoint output from Terraform as the host.
+    * Use these connection values:
+
+       ```text
+       Host name/address: <rds_endpoint output>
+       Port: 5432
+       Maintenance database: appdb
+       Username: <username from vault read database/creds/webapp>
+       Password: <password from vault read database/creds/webapp>
+       ```
+
+    * After connecting, open the `appdb` database and update the `demo_content` table to showcase real-time read/write access.
    * Update a record in the `demo_content` table to showcase real-time read/write access:
 
      ```sql
@@ -136,19 +147,19 @@ The following requirements are needed by this module:
 
 The following Modules are called:
 
-### <a name="module_alb_dynamic"></a> [alb\_dynamic](#module\_alb\_dynamic)
+### <a name="module_alb"></a> [alb](#module\_alb)
 
 Source: app.terraform.io/benoitblais-hashicorp/alb/aws
 
 Version: 0.0.1
 
-### <a name="module_alb_dynamic_sg"></a> [alb\_dynamic\_sg](#module\_alb\_dynamic\_sg)
+### <a name="module_alb_sg"></a> [alb\_sg](#module\_alb\_sg)
 
 Source: app.terraform.io/benoitblais-hashicorp/security-group/aws
 
 Version: 0.0.2
 
-### <a name="module_db_dynamic_sg"></a> [db\_dynamic\_sg](#module\_db\_dynamic\_sg)
+### <a name="module_db_sg"></a> [db\_sg](#module\_db\_sg)
 
 Source: terraform-aws-modules/security-group/aws
 
@@ -160,13 +171,13 @@ Source: app.terraform.io/benoitblais-hashicorp/vpc/aws
 
 Version: 0.0.1
 
-### <a name="module_web_dynamic"></a> [web\_dynamic](#module\_web\_dynamic)
+### <a name="module_web"></a> [web](#module\_web)
 
 Source: terraform-aws-modules/ec2-instance/aws
 
 Version: ~> 5.6
 
-### <a name="module_web_dynamic_sg"></a> [web\_dynamic\_sg](#module\_web\_dynamic\_sg)
+### <a name="module_web_sg"></a> [web\_sg](#module\_web\_sg)
 
 Source: app.terraform.io/benoitblais-hashicorp/security-group/aws
 
@@ -185,12 +196,6 @@ Type: `string`
 ### <a name="input_vault_server_ip"></a> [vault\_server\_ip](#input\_vault\_server\_ip)
 
 Description: (Required) The public IP address of the Vault server allowed to access the RDS database.
-
-Type: `string`
-
-### <a name="input_vault_token"></a> [vault\_token](#input\_vault\_token)
-
-Description: (Required) Vault token with administrative privileges.
 
 Type: `string`
 
@@ -252,18 +257,18 @@ The following resources are used by this module:
 
 - [aws_acm_certificate.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) (resource)
 - [aws_acm_certificate_validation.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) (resource)
-- [aws_db_instance.db_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) (resource)
-- [aws_db_subnet_group.dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group) (resource)
-- [aws_iam_instance_profile.ssm_profile_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) (resource)
-- [aws_iam_role.ssm_role_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) (resource)
-- [aws_iam_role_policy_attachment.ssm_core_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) (resource)
-- [aws_lb_target_group_attachment.web_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment) (resource)
+- [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) (resource)
+- [aws_db_subnet_group.db_subnet_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group) (resource)
+- [aws_iam_instance_profile.ssm_profile](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) (resource)
+- [aws_iam_role.ssm_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) (resource)
+- [aws_iam_role_policy_attachment.ssm_core_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) (resource)
+- [aws_lb_target_group_attachment.web_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment) (resource)
 - [aws_route53_record.public_validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
-- [aws_route53_record.web_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
-- [aws_route53_record.web_internal_dynamic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
-- [random_password.db_password_dynamic](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
-- [random_password.os_appuser_password_dynamic](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
-- [random_password.os_linuxadmin_password_dynamic](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
+- [aws_route53_record.web_dns_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
+- [aws_route53_record.web_internal_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
+- [random_password.db_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
+- [random_password.os_appuser_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
+- [random_password.os_linuxadmin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
 - [vault_auth_backend.aws](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/auth_backend) (resource)
 - [vault_aws_auth_backend_client.aws](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/aws_auth_backend_client) (resource)
 - [vault_aws_auth_backend_role.web_agent](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/aws_auth_backend_role) (resource)
@@ -296,7 +301,7 @@ The following outputs are exported:
 
 Description: The endpoint of the RDS instance
 
-### <a name="output_web_dynamic_public_ip"></a> [web\_dynamic\_public\_ip](#output\_web\_dynamic\_public\_ip)
+### <a name="output_web_public_ip"></a> [web\_public\_ip](#output\_web\_public\_ip)
 
 Description: The public IP of the web server
 

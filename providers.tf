@@ -11,7 +11,7 @@ provider "aws" {
 }
 
 provider "vault" {
-  address         = var.vault_address
-  token           = var.vault_token
-  skip_tls_verify = true # Required for self-signed or invalid certs on the demo Vault server
+  address = var.vault_address
+  # Authentication is handled via HCP Terraform JWT dynamic credentials.
+  # VAULT_TOKEN is injected automatically at plan/apply time — no static token required.
 }

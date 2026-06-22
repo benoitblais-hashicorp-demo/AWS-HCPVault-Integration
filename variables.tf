@@ -8,12 +8,6 @@ variable "vault_server_ip" {
   type        = string
 }
 
-variable "vault_token" {
-  description = "(Required) Vault token with administrative privileges."
-  type        = string
-  sensitive   = true
-}
-
 variable "admin_laptop_ip" {
   description = "(Optional) Public IP of your local laptop allowed to connect directly to the RDS instance for demo verification. Needs /32 suffix."
   type        = string

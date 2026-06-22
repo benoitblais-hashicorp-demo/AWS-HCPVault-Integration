@@ -39,7 +39,7 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
 
 1. **Showcase the Dynamic Web App:**
    Navigate to the `website_url` output (e.g. `https://web-dynamic.benoit-blais.sbx.hashidemos.io`) to show the secured application running correctly with an ACM-backed public certificate.
-2. **Demonstrate Dynamic OS Access:**
+2. **Demonstrate OS Access:**
    * Retrieve the Linux password material from Vault KV v2.
    * Use the generated credential to SSH into the EC2 instance as needed for demo operations.
 3. **Demonstrate Automated Certificate Rotation:**
@@ -64,7 +64,18 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
    * Demonstrate that SSH access is immediately permitted when using the newly minted password.
 5. **Demonstrate Dynamic Database Credentials:**
    * Request a temporary database credential: `vault read database/creds/webapp`
-   * Connect directly to the AWS RDS instance using these credentials (e.g., using `psql`, PGAdmin or DBeaver). Provide the RDS Endpoint output from Terraform as the host.
+    * Open pgAdmin4 and create a new connection using the RDS Endpoint output from Terraform as the host.
+    * Use these connection values:
+
+       ```text
+       Host name/address: <rds_endpoint output>
+       Port: 5432
+       Maintenance database: appdb
+       Username: <username from vault read database/creds/webapp>
+       Password: <password from vault read database/creds/webapp>
+       ```
+
+    * After connecting, open the `appdb` database and update the `demo_content` table to showcase real-time read/write access.
    * Update a record in the `demo_content` table to showcase real-time read/write access:
 
      ```sql

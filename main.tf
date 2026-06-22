@@ -362,7 +362,7 @@ resource "vault_aws_auth_backend_role" "web_agent" {
   role                     = "web-agent-role"
   auth_type                = "iam"
   bound_iam_principal_arns = [aws_iam_role.ssm_role.arn]
-  resolve_aws_unique_ids   = false
+  resolve_aws_unique_ids   = true
   token_policies           = ["default", vault_policy.agent_pki.name]
 }
 

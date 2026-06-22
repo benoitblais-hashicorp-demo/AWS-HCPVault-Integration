@@ -49,13 +49,13 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
    * While connected to the EC2 instance via SSH, run the following command to view the physical bundle managed by the workload:
 
      ```bash
-     openssl x509 -in /opt/app/bundle.pem -text -noout | grep -A 2 "Validity"
+     openssl x509 -in /opt/app/cert.pem -text -noout | grep -A 2 "Validity"
      ```
 
    * To prove the web server is actively serving traffic using this certificate, run the following command directly on the EC2 instance to poll the local listener:
 
      ```bash
-     curl -v --cacert /opt/app/bundle.pem https://localhost/ 2>&1 | grep "expire date"
+     curl -v --cacert /opt/app/cert.pem https://localhost/ 2>&1 | grep "expire date"
      ```
 
    * If you rotate the internal certificate, rerun the commands to show the updated validity window.

@@ -82,13 +82,19 @@ auto_auth {
 }
 
 template {
-  destination = "/opt/app/bundle.pem"
+  destination = "/opt/app/cert.pem"
   contents = <<EOT
-{{- with secret "pki-internal/issue/internal-web-role" (printf "common_name=web-dynamic.%s" "${private_zone}") "ttl=5m" -}}
+{{- with secret "pki-intermediate/issue/internal-web-role" (printf "common_name=web-dynamic.%s" "${private_zone}") "ttl=5m" -}}
 {{ .Data.certificate }}
-
 {{ .Data.issuing_ca }}
+{{- end -}}
+EOT
+}
 
+template {
+  destination = "/opt/app/key.pem"
+  contents = <<EOT
+{{- with secret "pki-intermediate/issue/internal-web-role" (printf "common_name=web-dynamic.%s" "${private_zone}") "ttl=5m" -}}
 {{ .Data.private_key }}
 {{- end -}}
 EOT
@@ -146,7 +152,7 @@ def index():
         return f"<h1>Database Error</h1><p>{str(e)}</p>"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=443, ssl_context=('/opt/app/bundle.pem', '/opt/app/bundle.pem'))
+    app.run(host='0.0.0.0', port=443, ssl_context=('/opt/app/cert.pem', '/opt/app/key.pem'))
 EOF
 
 # 5. Run the web application using SystemD
@@ -170,16 +176,16 @@ systemctl enable vault-agent
 
 systemctl start vault-agent
 
-# Wait for Vault Agent to render the initial certificate bundle before starting the web service
+# Wait for Vault Agent to render the initial certificate and key before starting the web service
 for i in $(seq 1 60); do
-  if [[ -f /opt/app/bundle.pem ]]; then
+  if [[ -f /opt/app/cert.pem && -f /opt/app/key.pem ]]; then
     break
   fi
   sleep 1
 done
 
-if [[ ! -f /opt/app/bundle.pem ]]; then
-  echo "Vault certificate bundle was not created in /opt/app/bundle.pem"
+if [[ ! -f /opt/app/cert.pem || ! -f /opt/app/key.pem ]]; then
+  echo "Vault certificate or key was not created in /opt/app/"
   journalctl -u vault-agent --no-pager -n 50 || true
   exit 1
 fi

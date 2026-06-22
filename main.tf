@@ -37,9 +37,9 @@ resource "vault_database_secret_backend_connection" "postgres" {
   allowed_roles = ["readonly", "webapp"]
 
   postgresql {
-    connection_url = "postgresql://{{username}}:{{password}}@${aws_db_instance.db_dynamic.endpoint}/${aws_db_instance.db_dynamic.db_name}"
-    username       = aws_db_instance.db_dynamic.username
-    password       = aws_db_instance.db_dynamic.password
+    connection_url = "postgresql://{{username}}:{{password}}@${aws_db_instance.db.endpoint}/${aws_db_instance.db.db_name}"
+    username       = aws_db_instance.db.username
+    password       = aws_db_instance.db.password
   }
 }
 
@@ -150,7 +150,7 @@ module "vpc" {
 
 # Security Group for the Application Load Balancer
 # Allows public access to the web app over standard HTTP/HTTPS ports.
-module "alb_dynamic_sg" {
+module "alb_sg" {
   source  = "app.terraform.io/benoitblais-hashicorp/security-group/aws"
   version = "0.0.2"
 
@@ -167,7 +167,7 @@ module "alb_dynamic_sg" {
 
 # Security Group for the Web Server (Private)
 # Prevents direct internet access to the EC2 instance, restricting traffic to the ALB.
-module "web_dynamic_sg" {
+module "web_sg" {
   source  = "app.terraform.io/benoitblais-hashicorp/security-group/aws"
   version = "0.0.2"
 
@@ -180,7 +180,7 @@ module "web_dynamic_sg" {
     {
       # The ALB terminates public HTTPS and forwards to the target group over internal HTTPS port 443
       rule                     = "https-443-tcp"
-      source_security_group_id = module.alb_dynamic_sg.security_group_id
+      source_security_group_id = module.alb_sg.security_group_id
     }
   ]
 
@@ -210,7 +210,7 @@ module "web_dynamic_sg" {
 
 # Application Load Balancer
 # Balances traffic to the private EC2 instances. Deletion protection disabled for easy demo teardown.
-module "alb_dynamic" {
+module "alb" {
   source  = "app.terraform.io/benoitblais-hashicorp/alb/aws"
   version = "0.0.1"
 
@@ -222,7 +222,7 @@ module "alb_dynamic" {
   enable_deletion_protection = false
 
   # Ensure the security group is correctly passed
-  security_groups = [module.alb_dynamic_sg.security_group_id]
+  security_groups = [module.alb_sg.security_group_id]
 
   # Redirect HTTP to HTTPS and terminate public TLS at ALB with ACM certificate
   listeners = {
@@ -257,9 +257,9 @@ module "alb_dynamic" {
 }
 
 # Attach EC2 Instance to the ALB Target Group
-resource "aws_lb_target_group_attachment" "web_dynamic" {
-  target_group_arn = module.alb_dynamic.target_groups["web-dynamic-tg"].arn
-  target_id        = module.web_dynamic.id
+resource "aws_lb_target_group_attachment" "web_attachment" {
+  target_group_arn = module.alb.target_groups["web-dynamic-tg"].arn
+  target_id        = module.web.id
   port             = 443
 }
 
@@ -307,14 +307,14 @@ resource "aws_acm_certificate_validation" "public" {
 }
 
 # Map the public website DNS fully to the AWS Load Balancer
-resource "aws_route53_record" "web_dynamic" {
+resource "aws_route53_record" "web_dns_record" {
   zone_id = data.aws_route53_zone.demo.zone_id
   name    = "web-dynamic.${var.public_hosted_zone}"
   type    = "A"
 
   alias {
-    name                   = module.alb_dynamic.dns_name
-    zone_id                = module.alb_dynamic.zone_id
+    name                   = module.alb.dns_name
+    zone_id                = module.alb.zone_id
     evaluate_target_health = true
   }
 }
@@ -361,7 +361,7 @@ resource "vault_aws_auth_backend_role" "web_agent" {
   backend                  = vault_auth_backend.aws.path
   role                     = "web-agent-role"
   auth_type                = "iam"
-  bound_iam_principal_arns = [aws_iam_role.ssm_role_dynamic.arn]
+  bound_iam_principal_arns = [aws_iam_role.ssm_role.arn]
   resolve_aws_unique_ids   = false
   token_policies           = ["default", vault_policy.agent_pki.name]
 }
@@ -373,12 +373,12 @@ data "aws_route53_zone" "internal" {
   private_zone = true
 }
 
-resource "aws_route53_record" "web_internal_dynamic" {
+resource "aws_route53_record" "web_internal_record" {
   zone_id = data.aws_route53_zone.internal.zone_id
   name    = "web-dynamic.${var.private_hosted_zone}"
   type    = "A"
   ttl     = 300
-  records = [module.web_dynamic.private_ip]
+  records = [module.web.private_ip]
 }
 
 # EC2 INSTANCE (WEB SERVER)
@@ -386,8 +386,8 @@ resource "aws_route53_record" "web_internal_dynamic" {
 
 # IAM Role for SSM Session Manager
 # Security Best Practice: No inbound SSH directly over Internet, access securely via Systems Manager
-resource "aws_iam_role" "ssm_role_dynamic" {
-  name = "web_dynamic_ssm_role"
+resource "aws_iam_role" "ssm_role" {
+  name = "web_ssm_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -403,24 +403,24 @@ resource "aws_iam_role" "ssm_role_dynamic" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_core_dynamic" {
-  role       = aws_iam_role.ssm_role_dynamic.name
+resource "aws_iam_role_policy_attachment" "ssm_core_attachment" {
+  role       = aws_iam_role.ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ssm_profile_dynamic" {
-  name = "web_dynamic_ssm_profile"
-  role = aws_iam_role.ssm_role_dynamic.name
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "web_ssm_profile"
+  role = aws_iam_role.ssm_role.name
 }
 
 # Generate passwords for Linux users and store them in Vault KV v2
-resource "random_password" "os_linuxadmin_password_dynamic" {
+resource "random_password" "os_linuxadmin_password" {
   length           = 32
   special          = true
   override_special = "-_"
 }
 
-resource "random_password" "os_appuser_password_dynamic" {
+resource "random_password" "os_appuser_password" {
   length           = 32
   special          = true
   override_special = "-_"
@@ -432,8 +432,8 @@ resource "vault_kv_secret_v2" "linux_vm_credentials" {
   mount     = vault_mount.kvv2.path
   name      = "linux/web-dynamic"
   data_json = jsonencode({
-    linuxadmin_password = random_password.os_linuxadmin_password_dynamic.result
-    appuser_password    = random_password.os_appuser_password_dynamic.result
+    linuxadmin_password = random_password.os_linuxadmin_password.result
+    appuser_password    = random_password.os_appuser_password.result
   })
 }
 
@@ -469,7 +469,7 @@ data "aws_ami" "rhel9" {
   }
 }
 
-module "web_dynamic" {
+module "web" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 5.6"
 
@@ -480,13 +480,13 @@ module "web_dynamic" {
 
   # Inject startup script to seed the DB and install the web app
   user_data = templatefile("${path.module}/scripts/bootstrap_web-dynamic.sh", {
-    db_host            = aws_db_instance.db_dynamic.address
-    db_port            = aws_db_instance.db_dynamic.port
-    db_name            = aws_db_instance.db_dynamic.db_name
-    db_user            = aws_db_instance.db_dynamic.username
-    db_password        = aws_db_instance.db_dynamic.password
-    linuxadmin_initial = random_password.os_linuxadmin_password_dynamic.result
-    appuser_initial    = random_password.os_appuser_password_dynamic.result
+    db_host            = aws_db_instance.db.address
+    db_port            = aws_db_instance.db.port
+    db_name            = aws_db_instance.db.db_name
+    db_user            = aws_db_instance.db.username
+    db_password        = aws_db_instance.db.password
+    linuxadmin_initial = random_password.os_linuxadmin_password.result
+    appuser_initial    = random_password.os_appuser_password.result
     # Passing Vault config to the EC2 so Vault Agent can authenticate via AWS IAM and auto-rotate internal certs
     vault_address = var.vault_address
     pki_namespace = vault_namespace.demo_platform.path_fq
@@ -497,8 +497,8 @@ module "web_dynamic" {
 
   subnet_id                   = module.vpc.public_subnets[0]
   associate_public_ip_address = true
-  vpc_security_group_ids      = [module.web_dynamic_sg.security_group_id]
-  iam_instance_profile        = aws_iam_instance_profile.ssm_profile_dynamic.name
+  vpc_security_group_ids      = [module.web_sg.security_group_id]
+  iam_instance_profile        = aws_iam_instance_profile.ssm_profile.name
 
   # Security best practice: IMDSv2 enabled
   metadata_options = {
@@ -519,7 +519,7 @@ module "web_dynamic" {
 # Database Security Group
 # Required to accept connections from Vault to rotate dynamic secrets,
 # as well as the Web Server hosting the frontend application.
-module "db_dynamic_sg" {
+module "db_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
@@ -545,7 +545,7 @@ module "db_dynamic_sg" {
   ingress_with_source_security_group_id = [
     {
       rule                     = "postgresql-tcp"
-      source_security_group_id = module.web_dynamic_sg.security_group_id
+      source_security_group_id = module.web_sg.security_group_id
       description              = "Access from internal Web Server"
     }
   ]
@@ -557,7 +557,7 @@ module "db_dynamic_sg" {
 # ------------------------------------------------------------------------------
 
 # DB Subnet Group mapped to Public Subnets for Vault accessibility
-resource "aws_db_subnet_group" "dynamic" {
+resource "aws_db_subnet_group" "db_subnet_group" {
   name = "public-db-subnets"
   # Placed in the public subnets so external Vault can reach it for JIT secret generation
   subnet_ids = module.vpc.public_subnets
@@ -565,7 +565,7 @@ resource "aws_db_subnet_group" "dynamic" {
 
 # Database credentials injected temporarily to application script during startup
 # In a full Vault adoption, Vault agent would fetch this directly without being rendered here.
-resource "random_password" "db_password_dynamic" {
+resource "random_password" "db_password" {
   length           = 24
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
@@ -575,7 +575,7 @@ resource "random_password" "db_password_dynamic" {
 # Configured as publicly accessible purely for the demo so external Vault can 
 # route internal dynamic DB secrets without a VPN/VPC connection.
 # Deletion protection is skipped so tear-downs are seamless.
-resource "aws_db_instance" "db_dynamic" {
+resource "aws_db_instance" "db" {
   identifier        = "vault-demo-postgres"
   engine            = "postgres"
   engine_version    = "15" # AWS will use the most robust available 15.x patch
@@ -583,12 +583,12 @@ resource "aws_db_instance" "db_dynamic" {
   allocated_storage = 20
   db_name           = "appdb"
   username          = "dbadmin"
-  password          = random_password.db_password_dynamic.result
+  password          = random_password.db_password.result
 
   # Required to be Public so external Vault can connect and manage roles
   publicly_accessible    = true
-  vpc_security_group_ids = [module.db_dynamic_sg.security_group_id]
-  db_subnet_group_name   = aws_db_subnet_group.dynamic.name
+  vpc_security_group_ids = [module.db_sg.security_group_id]
+  db_subnet_group_name   = aws_db_subnet_group.db_subnet_group.name
   skip_final_snapshot    = true
 }
 

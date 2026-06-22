@@ -1,11 +1,11 @@
 output "rds_endpoint" {
   description = "The endpoint of the RDS instance"
-  value       = aws_db_instance.db_dynamic.endpoint
+  value       = aws_db_instance.db.endpoint
 }
 
-output "web_dynamic_public_ip" {
+output "web_public_ip" {
   description = "The public IP of the web server"
-  value       = module.web_dynamic.public_ip
+  value       = module.web.public_ip
 }
 
 output "website_url" {

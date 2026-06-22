@@ -44,7 +44,6 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
    * Retrieve the Linux password material from Vault KV v2.
    * Use the generated credential to SSH into the EC2 instance as needed for demo operations.
 3. **Demonstrate Automated Certificate Rotation:**
-   * **Public Certificate (AWS ACM)**: Show that the application is directly running via the Application Load Balancer using an ACM-backed certificate.
    * **Internal Certificates (Vault PKI)**: In the Vault UI, show the `pki-root` and `pki-intermediate` secret engine mounts.
    * While connected to the EC2 instance via SSH, run the following command to view the physical bundle managed by the workload:
 
@@ -59,11 +58,7 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
      ```
 
    * If you rotate the internal certificate, rerun the commands to show the updated validity window.
-4. **Demonstrate Automated OS Password Rotation:**
-   * Reissue the Linux password material from Vault KV v2 to show the value changes when rotated.
-   * Attempt to SSH using the previous credential. The connection should fail once the password has been updated.
-   * Demonstrate that SSH access is immediately permitted when using the newly minted password.
-5. **Demonstrate Dynamic Database Credentials:**
+4. **Demonstrate Dynamic Database Credentials:**
    * Request a temporary database credential: `vault read database/creds/webapp`
    * Open pgAdmin4 and create a new connection using the RDS Endpoint output from Terraform as the host.
    * Use these connection values:
@@ -84,7 +79,7 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
      ```
 
    * Reload the web page to show the live database update.
-6. **Wait for Expiration:**
+5. **Wait for Expiration:**
    * Wait a few minutes for the TTL to expire (the default demo database lease is an ultra-short **300s / 5 minutes**), or actively revoke the lease in Vault to forcefully bypass the timer.
    * Attempt to connect to the database again using the identical dynamic credentials. Access will be explicitly denied, proving zero-trust enforcement.
 

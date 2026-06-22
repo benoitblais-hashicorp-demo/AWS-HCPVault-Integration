@@ -65,18 +65,18 @@ Terraform provisions the AWS networking and compute infrastructure. It also boot
    * Demonstrate that SSH access is immediately permitted when using the newly minted password.
 5. **Demonstrate Dynamic Database Credentials:**
    * Request a temporary database credential: `vault read database/creds/webapp`
-    * Open pgAdmin4 and create a new connection using the RDS Endpoint output from Terraform as the host.
-    * Use these connection values:
+   * Open pgAdmin4 and create a new connection using the RDS Endpoint output from Terraform as the host.
+   * Use these connection values:
 
-       ```text
-       Host name/address: <rds_endpoint output>
-       Port: 5432
-       Maintenance database: appdb
-       Username: <username from vault read database/creds/webapp>
-       Password: <password from vault read database/creds/webapp>
-       ```
+     ```text
+     Host name/address: <rds_endpoint output>
+     Port: 5432
+     Maintenance database: appdb
+     Username: <username from vault read database/creds/webapp>
+     Password: <password from vault read database/creds/webapp>
+     ```
 
-    * After connecting, open the `appdb` database and update the `demo_content` table to showcase real-time read/write access.
+   * After connecting, open the `appdb` database and update the `demo_content` table to showcase real-time read/write access.
    * Update a record in the `demo_content` table to showcase real-time read/write access:
 
      ```sql

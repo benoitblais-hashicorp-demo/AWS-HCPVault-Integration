@@ -188,12 +188,6 @@ Description: (Required) The public IP address of the Vault server allowed to acc
 
 Type: `string`
 
-### <a name="input_vault_token"></a> [vault\_token](#input\_vault\_token)
-
-Description: (Required) Vault token with administrative privileges.
-
-Type: `string`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):

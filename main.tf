@@ -1,4 +1,88 @@
 # ==============================================================================
+# State Migration For Renamed Resources
+# ==============================================================================
+
+moved {
+  from = module.alb_dynamic_sg
+  to   = module.alb_sg
+}
+
+moved {
+  from = module.web_dynamic_sg
+  to   = module.web_sg
+}
+
+moved {
+  from = module.alb_dynamic
+  to   = module.alb
+}
+
+moved {
+  from = module.web_dynamic
+  to   = module.web
+}
+
+moved {
+  from = module.db_dynamic_sg
+  to   = module.db_sg
+}
+
+moved {
+  from = aws_lb_target_group_attachment.web_dynamic
+  to   = aws_lb_target_group_attachment.web_attachment
+}
+
+moved {
+  from = aws_route53_record.web_dynamic
+  to   = aws_route53_record.web_dns_record
+}
+
+moved {
+  from = aws_route53_record.web_internal_dynamic
+  to   = aws_route53_record.web_internal_record
+}
+
+moved {
+  from = aws_iam_role.ssm_role_dynamic
+  to   = aws_iam_role.ssm_role
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.ssm_core_dynamic
+  to   = aws_iam_role_policy_attachment.ssm_core_attachment
+}
+
+moved {
+  from = aws_iam_instance_profile.ssm_profile_dynamic
+  to   = aws_iam_instance_profile.ssm_profile
+}
+
+moved {
+  from = random_password.os_linuxadmin_password_dynamic
+  to   = random_password.os_linuxadmin_password
+}
+
+moved {
+  from = random_password.os_appuser_password_dynamic
+  to   = random_password.os_appuser_password
+}
+
+moved {
+  from = aws_db_subnet_group.dynamic
+  to   = aws_db_subnet_group.db_subnet_group
+}
+
+moved {
+  from = random_password.db_password_dynamic
+  to   = random_password.db_password
+}
+
+moved {
+  from = aws_db_instance.db_dynamic
+  to   = aws_db_instance.db
+}
+
+# ==============================================================================
 # Vault Core Configuration
 # ==============================================================================
 

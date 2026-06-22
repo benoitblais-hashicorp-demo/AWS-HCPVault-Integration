@@ -14,23 +14,6 @@ variable "vault_token" {
   sensitive   = true
 }
 
-variable "acme_email" {
-  description = "(Optional) Email address for Let's Encrypt ACME account registration."
-  type        = string
-  default     = "benoit.blais@ibm.com"
-}
-
-variable "demo_namespace" {
-  description = "(Optional) Vault namespace path for the demo. Must use lowercase letters, numbers, and underscores, and must start with demo_."
-  type        = string
-  default     = "demo_platform"
-
-  validation {
-    condition     = can(regex("^demo_[a-z0-9_]+$", var.demo_namespace))
-    error_message = "The demo_namespace value must start with demo_ and contain only lowercase letters, numbers, and underscores."
-  }
-}
-
 variable "admin_laptop_ip" {
   description = "(Optional) Public IP of your local laptop allowed to connect directly to the RDS instance for demo verification. Needs /32 suffix."
   type        = string
@@ -43,10 +26,15 @@ variable "aws_region" {
   default     = "ca-central-1"
 }
 
-variable "force_cert_rotation" {
-  description = "(Optional) A trigger to forcefully rotate the ALB Let's Encrypt certificate prematurely during demonstrations. Change this value to force rotation."
+variable "demo_namespace" {
+  description = "(Optional) Vault namespace path for the demo. Must use lowercase letters, numbers, and underscores, and must start with demo_."
   type        = string
-  default     = "1"
+  default     = "demo_platform"
+
+  validation {
+    condition     = can(regex("^demo_[a-z0-9_]+$", var.demo_namespace))
+    error_message = "The demo_namespace value must start with demo_ and contain only lowercase letters, numbers, and underscores."
+  }
 }
 
 variable "private_hosted_zone" {

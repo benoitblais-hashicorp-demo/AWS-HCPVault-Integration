@@ -105,7 +105,8 @@ Refer to CONTRIBUTING.md for general coding guidelines. HashiCorp's Terraform st
 ## Security and Secrets
 
 - Never commit `.terraform` directories or local state files.
-- The project leverages dynamic provider credentials natively supported by Terraform Cloud / Enterprise workspaces or the VCS workflow.
+- The project leverages dynamic provider credentials natively supported by HCP Terraform workspaces via the VCS workflow. No static Vault token is used.
+- The Vault provider authenticates via JWT dynamic credentials. Set `VAULT_ADDR` as a workspace variable pointing to the HCP Vault cluster endpoint.
 - Access secrets securely via workspace variables or Vault lookups.
 - Apply least-privilege IAM and Vault policies for all identities.
 - Avoid exposing credentials in outputs, logs, or user data where possible.

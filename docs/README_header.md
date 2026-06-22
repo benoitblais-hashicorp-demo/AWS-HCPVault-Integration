@@ -112,12 +112,7 @@ To provision resources on AWS, Terraform requires authentication. You can authen
 
 ### Vault Provider Authentication
 
-The `vault` provider must be configured to communicate with your HashiCorp Vault cluster.
+The `vault` provider authenticates using HCP Terraform dynamic credentials via JWT. No static Vault token is used or required.
 
-* **HCP Terraform / JWT Auth (Recommended)**: Configure Vault to trust HCP Terraform workspace identities via JWT authentication.
-* **Environment Variables**: Provide the Vault address and token for local runs.
-
-  ```bash
-  export VAULT_ADDR="https://vault.example.com:8200"
-   export VAULT_TOKEN="<your-vault-token>"
-  ```
+* **HCP Terraform / JWT Auth**: The HCP Terraform workspace is configured to authenticate to Vault using a trusted JWT identity. The Vault provider receives a short-lived token automatically at plan and apply time.
+* **Required workspace variables**: `VAULT_ADDR` must be set in the HCP Terraform workspace pointing to your HCP Vault cluster endpoint.

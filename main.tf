@@ -359,16 +359,16 @@ resource "vault_aws_auth_backend_client" "aws" {
 data "aws_caller_identity" "current" {}
 
 resource "vault_aws_auth_backend_role" "web_agent" {
-  namespace                = vault_namespace.demo_platform.path_fq
-  backend                  = vault_auth_backend.aws.path
-  role                     = "web-agent-role"
-  auth_type                = "iam"
+  namespace = vault_namespace.demo_platform.path_fq
+  backend   = vault_auth_backend.aws.path
+  role      = "web-agent-role"
+  auth_type = "iam"
   bound_iam_principal_arns = [
     aws_iam_role.ssm_role.arn,
     format("arn:aws:sts::%s:assumed-role/%s/*", data.aws_caller_identity.current.account_id, aws_iam_role.ssm_role.name)
   ]
-  resolve_aws_unique_ids   = false
-  token_policies           = ["default", vault_policy.agent_pki.name]
+  resolve_aws_unique_ids = false
+  token_policies         = ["default", vault_policy.agent_pki.name]
 }
 
 # Map this directly to the Private IP of our Web Server EC2 instance
